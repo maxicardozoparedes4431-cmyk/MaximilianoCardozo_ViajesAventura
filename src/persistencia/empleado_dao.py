@@ -1,0 +1,119 @@
+from dominio.empleado import Empleado
+from persistencia.conexion import abrir_conexion, marcador_sql
+
+class EmpleadoDAO:
+
+    @staticmethod
+    def registrarEmpleado(empleado):
+        conexion = abrir_conexion()
+        cursor = conexion.cursor()
+        marcador = marcador_sql()
+        sql = f"""
+        INSERT INTO empleado (nombre, correo, departamento, direccion, telefono)
+        VALUES ({marcador}, {marcador}, {marcador}, {marcador}, {marcador})
+        """
+        cursor.execute(sql, (empleado.nombre, empleado.correo, empleado.departamento, empleado.direccion, empleado.telefono))
+        empleado.id = cursor.lastrowid
+        conexion.commit()
+        conexion.close()
+        return empleado
+
+    @staticmethod
+    def _fila_a_empleado(fila):
+        return Empleado(
+        id=fila[0],
+        nombre=fila[1],
+        correo=fila[2],
+        departamento=fila[3],
+        direccion=fila[4],
+        telefono=fila[5]
+    )
+
+    @staticmethod
+    def buscarPorId(id_empleado):
+        conexion = abrir_conexion()
+        cursor = conexion.cursor()
+        marca = marcador_sql()
+        
+        sql =f"""
+        SELECT id, nombre, correo, departamento, direccion, telefono
+        FROM empleado WHERE id = {marca}
+        """
+
+        cursor.execute(sql, (id_empleado,))
+        fila = cursor.fetchone()
+        conexion.commit()
+        conexion.close()
+
+        if fila is None:
+            return None
+
+        return EmpleadoDAO._fila_a_empleado(fila)
+
+
+    @staticmethod
+    def listar():
+        conexion = abrir_conexion()
+        cursor = conexion.cursor()
+        cursor.execute(
+        "SELECT id, nombre, correo, departamento, direccion, telefono FROM empleado"
+        )
+        filas = cursor.fetchall()
+        conexion.close()
+        empleados = []
+        for fila in filas:
+            empleados.append(
+            EmpleadoDAO._fila_a_empleado(fila)
+            )
+        
+        if fila is None:
+            return None
+        
+        return empleados
+
+    @staticmethod
+    def eliminarEmpleado(empleado):
+        conexion = abrir_conexion()
+        cursor = conexion.cursor()
+        marca = marcador_sql()
+
+        sql = f"""
+        DELETE FROM empleado WHERE id = {marca}
+        """
+        cursor.execute(sql, (empleado.id,))
+        conexion.commit()
+        conexion.close()
+
+    @staticmethod
+    def actualizarEmpleado(empleado):
+        conexion = abrir_conexion()
+        cursor = conexion.cursor()
+        marca = marcador_sql()
+
+        sql = f"""
+        UPDATE empleado
+        SET nombre = {marca}, correo = {marca}, departamento = {marca}, direccion = {marca}, telefono = {marca}
+        WHERE id = {marca}
+        """
+
+        cursor.execute(sql, (empleado.nombre, empleado.correo, empleado.departamento, empleado.direccion, empleado.telefono, empleado.id))
+        conexion.commit()
+        conexion.close()
+
+    @staticmethod
+    def actualizarEmpleado_comoEmpleado(empleado):
+        conexion = abrir_conexion()
+        cursor = conexion.cursor()
+        marca = marcador_sql()
+
+        sql = f"""
+        UPDATE empleado
+        SET nombre = {marca}, correo = {marca}, direccion = {marca}, telefono = {marca}
+        WHERE id = {marca}
+        """
+
+        cursor.execute(sql, (empleado.nombre, empleado.correo, empleado.direccion, empleado.telefono, empleado.id))
+        conexion.commit()
+        conexion.close()
+
+
